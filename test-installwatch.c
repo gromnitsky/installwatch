@@ -17,13 +17,16 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#define _LARGEFILE64_SOURCE 1 // see <features.h>
 #include <fcntl.h>
+
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <time.h>
 #include <dlfcn.h>
+#include <stdlib.h>
 
 #include "localdecls.h"
 

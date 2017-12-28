@@ -2,9 +2,18 @@
 
 This is a fork of installwatch cmd from
 [CheckInstall](http://www.asic-linux.com.mx/~izto/checkinstall/index.php)
-pkg. For a before the fork changelog, see the orig repo.
+pkg.
 
-## Installation
+Since the fork:
+
+* The app modified to not require an installation.
+* The wrapper script looks for the .so in its dir, not in the system
+  one.
+* Makefile outputs everything in `_build` dir.
+
+For a old changelog, see the orig repo.
+
+## Compilation
 
 	$ make
 
@@ -29,13 +38,13 @@ or modified file.
 	installwatch -o <filename> <command>
 
 does the same thing, but writing data in <filename>, which is truncated
-if it already exixts.
+if it already exits.
 
-The typical use is:
+A typical usage:
 
 	installwatch -o ~/install/foobar-x.y make install
 
-Extra options are displayed by running:
+Extra options:
 
 	installwatch --help
 

@@ -1,35 +1,12 @@
 #!/bin/bash
-#$Id: installwatch,v 0.6.7.0 2007/12/04 07:35:04 gna Exp $
 
-#set -x
+__filename=`readlink -f $0`
+__dirname=`dirname ${__filename}`
 
-PREFIX=${PREFIX:-#PREFIX#}
-
-HACK="PREFIX"
-HACK="#$HACK#";
-
-if test "$PREFIX" = "$HACK" ; then
-	echo 'This script has not been installed'
-	echo 'Please run "make install"'
-	exit 1
-fi
-
-LIBDIR=$DESTDIR$PREFIX/lib
-LIB64_PLATFORM=false
-case `uname -m` in
-    x86_64|ppc64|s390x)
-	LIB64_PLATFORM=true
-	;;
-esac
-if test -d $PREFIX/lib64 && test "$LIB64_PLATFORM" = "true" ; then
-	LIBDIR=$PREFIX/lib64
-else
-	LIBDIR=$PREFIX/lib
-fi
-  
+LIBDIR=$__dirname
 BASE_TMP_DIR=/tmp
   
-INSTALLWATCH_VERSION=0.7.0beta7
+INSTALLWATCH_VERSION=%%VERSION%%
   
  
 #

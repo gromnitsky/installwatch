@@ -1,7 +1,8 @@
 out := _build
+cache := $(out)/.cache
 ver=$(shell cat VERSION)
 
-CFLAGS_COMMON := -Wall -I$(out) -DVERSION=\"$(ver)\"
+CFLAGS_COMMON := -Wall -I$(cache) -DVERSION=\"$(ver)\"
 CFLAGS := $(CFLAGS_COMMON) -D_GNU_SOURCE -DPIC -fPIC -D_REENTRANT
 LDFLAGS := -ldl -lc
 
@@ -9,19 +10,19 @@ $(out)/installwatch: $(out)/installwatch.so installwatch
 	sed 's/%%VERSION%%/$(ver)/' installwatch > $@
 	chmod +x $@
 
-$(out)/installwatch.so: $(out)/installwatch.o
+$(out)/installwatch.so: $(cache)/installwatch.o
 	$(LD) -shared -o $@ $< $(LDFLAGS)
 
-$(out)/installwatch.o: installwatch.c $(out)/localdecls.h
+$(cache)/installwatch.o: installwatch.c $(cache)/localdecls.h
 	$(COMPILE.c) $(OUTPUT_OPTION) $<
 
-$(out)/localdecls.h: create-localdecls libctest.c libcfiletest.c
+$(cache)/localdecls.h: create-localdecls libctest.c libcfiletest.c
 	@mkdir -p $(dir $@)
 	cp $(filter %.c, $^) $(dir $@)
-	cd $(out) && ../$<
+	cd $(dir $@) && ../../$<
 
 
 
 test: $(out)/installwatch
-	$(CC) $(CFLAGS_COMMON) $(LDFLAGS) -o $(out)/test-installwatch test-installwatch.c -DLIBDIR=\"$(out)\"
-	$(out)/installwatch $(out)/test-installwatch
+	$(CC) $(CFLAGS_COMMON) $(LDFLAGS) -o $(cache)/test-installwatch test-installwatch.c -DLIBDIR=\"$(out)\"
+	$(out)/installwatch $(cache)/test-installwatch

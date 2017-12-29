@@ -88,11 +88,7 @@ static int (*true_xmknod)(int ver,const char *, mode_t, dev_t *);
 static int (*true_open)(const char *, int, ...);
 static DIR *(*true_opendir)(const char *);
 static struct dirent *(*true_readdir)(DIR *dir);
-#if (GLIBC_MINOR <= 4)
-static int (*true_readlink)(const char*,char *,size_t);
-#else
 static ssize_t (*true_readlink)(const char*,char *,size_t);
-#endif
 static char *(*true_realpath)(const char *,char *);
 static int (*true_rename)(const char *, const char *);
 static int (*true_rmdir)(const char *);
@@ -122,8 +118,6 @@ static int (*true_setxattr)(const char *,const char *,const void *,
                             size_t, int);
 static int (*true_removexattr)(const char *,const char *);
 
-#if(GLIBC_MINOR >= 1)
-
 static int (*true_creat64)(const char *, __mode_t);
 static FILE *(*true_fopen64)(const char *,const char *);
 static int (*true_ftruncate64)(int, __off64_t);
@@ -143,9 +137,7 @@ static int (*true_xstat64)(int,const char *, struct stat64 *);
 static int (*true_lxstat64)(int,const char *, struct stat64 *);
 static int (*true_truncate64)(const char *, __off64_t);
 
-#endif
 
-#if (GLIBC_MINOR >= 4)
 static int (*true_openat)(int, const char *, int, ...);
 static int (*true_fchmodat)(int, const char *, mode_t, int);
 static int (*true_fchownat)(int, const char *, uid_t, gid_t, int);
@@ -158,7 +150,6 @@ static int (*true_xmknodat)(int, int, const char *, mode_t, dev_t *);
 static int (*true_renameat)(int, const char *, int, const char *);
 static int (*true_symlinkat)(const char *, int, const char *);
 static int (*true_unlinkat)(int, const char *, int);
-#endif
 
 #if defined __GNUC__ && __GNUC__>=2
 	#define inline inline
@@ -178,7 +169,6 @@ static inline int true_lstat(const char *pathname,struct stat *info) {
 	return true_lxstat(_STAT_VER,pathname,info);
 }
 
-#if (GLIBC_MINOR >= 4)
 static inline int true_fstatat(int dirfd, const char *pathname, struct stat *info, int flags) {
 	return true_fxstatat(_STAT_VER, dirfd, pathname, info, flags);
 }
@@ -191,7 +181,6 @@ static inline int true_mknodat(int dirfd, const char *pathname,mode_t mode,dev_t
 	return true_xmknodat(_MKNOD_VER, dirfd, pathname, mode, &dev);
 }
 
-#endif
 
   /* A few defines to fix things a little */
 #define INSTW_OK 0 
@@ -285,9 +274,7 @@ int parse_suffix(char *,char *,const char *);
 
 #if DEBUG
 static int __instw_printdirent(struct dirent*);
-#if(GLIBC_MINOR >= 1)
 static int __instw_printdirent64(struct dirent64*);
-#endif
 #endif
 
 #ifdef DEBUG
@@ -303,9 +290,7 @@ static int instw_delete(instw_t *);
 static int instw_setmetatransl(instw_t *);
 
 static int instw_setpath(instw_t *,const char *);
-#if (GLIBC_MINOR >= 4)
 static int instw_setpathrel(instw_t *, int, const char *);
-#endif
 static int instw_getstatus(instw_t *,int *);
 static int instw_apply(instw_t *);
 static int instw_filldirls(instw_t *);
@@ -392,7 +377,6 @@ static void initialize(void) {
 
 
 
-#if(GLIBC_MINOR >= 1)
 	true_creat64     = dlsym(libc_handle, "creat64");
 	true_fopen64     = dlsym(libc_handle, "fopen64");
 	true_ftruncate64 = dlsym(libc_handle, "ftruncate64");
@@ -403,9 +387,7 @@ static void initialize(void) {
 	true_lxstat64    = dlsym(libc_handle, "__lxstat64");
 	true_truncate64  = dlsym(libc_handle, "truncate64");
         true_removexattr = dlsym(libc_handle, "removexattr");
-#endif
 
-#if (GLIBC_MINOR >= 4)
 
 	true_openat      = dlsym(libc_handle, "openat");
 	true_fchmodat      = dlsym(libc_handle, "fchmodat");
@@ -420,7 +402,6 @@ static void initialize(void) {
 	true_symlinkat     = dlsym(libc_handle, "symlinkat");
 	true_unlinkat      = dlsym(libc_handle, "unlinkat");
 
-#endif
 
 	if(instw_init()) exit(-1);
 }
@@ -1687,7 +1668,6 @@ static int instw_setpath(instw_t *instw,const char *path) {
  * returns   = /  0 ok. path set
  *               -1 failed. cf errno /
  */
-#if (GLIBC_MINOR >= 4)
 static int instw_setpathrel(instw_t *instw, int dirfd, const char *relpath) {
 
 /* This constant should be large enough to make a string that holds
@@ -1727,7 +1707,6 @@ out:
 
 #undef PROC_PATH_LEN
 }
-#endif
 
 /*
  * procedure = / rc:=instw_getstatus(instw,status) /
@@ -2859,7 +2838,7 @@ int open(const char *pathname, int flags, ...) {
 #endif
 
 	va_start(ap, flags);
-	mode = va_arg(ap, mode_t);
+	mode = va_arg(ap, int /*promoted from mode_t*/);
 	va_end(ap);
 
 	  /* We were asked to work in "real" mode */
@@ -2958,13 +2937,8 @@ struct dirent *readdir(DIR *dir) {
 	return result;
 }
 
-#if (GLIBC_MINOR <= 4)
-int readlink(const char *path,char *buf,size_t bufsiz) {
-	int result;
-#else
 ssize_t readlink(const char *path,char *buf,size_t bufsiz) {
 	ssize_t result;
-#endif
 	instw_t instw;
 	int status;
 
@@ -3518,7 +3492,6 @@ int removexattr (const char *pathname, const char *name)
         return result;
 }
 
-#if(GLIBC_MINOR >= 1)
 
 int creat64(const char *pathname, __mode_t mode) {
 /* Is it a system call? */
@@ -3646,7 +3619,7 @@ int open64(const char *pathname, int flags, ...) {
 #endif
 
 	va_start(ap, flags);
-	mode = va_arg(ap, mode_t);
+	mode = va_arg(ap, int /*promoted from mode_t*/);
 	va_end(ap);
 
 	  /* We were asked to work in "real" mode */
@@ -3862,7 +3835,6 @@ int truncate64(const char *path, __off64_t length) {
 	return result;
 }
 
-#endif /* GLIBC_MINOR >= 1 */
 
 
 /***********************************************
@@ -3882,14 +3854,13 @@ int truncate64(const char *path, __off64_t length) {
  * Thanks to Gilbert Ashley for his work on this!
  */
 
-#if (GLIBC_MINOR >= 4)
  
 int openat (int dirfd, const char *path, int flags, ...) {
  	mode_t mode = 0;
  	va_list arg;
  	if(flags & O_CREAT) {
  		va_start(arg, flags);
- 		mode = va_arg(arg, mode_t);
+ 		mode = va_arg(arg, int /*promoted from mode_t*/);
  		va_end (arg);
  	}
  	
@@ -4547,5 +4518,3 @@ int unlinkat (int dirfd, const char *path, int flags) {
 
 }
 
-
-#endif /* GLIBC_MINOR >= 4 */

@@ -36,6 +36,6 @@ $(cache)/localdecls.h: $(bootstrap)
 
 
 .PHONY: test
-test: $(out)/installwatch
+test: all
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $(cache)/test-installwatch test/test-installwatch.c -DLIBDIR=\"$(out)\"
 	$(out)/installwatch $(cache)/test-installwatch

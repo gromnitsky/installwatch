@@ -1,17 +1,18 @@
 # installwatch
 
-This is a fork of installwatch cmd from
+This is a fork of `installwatch` cmd from
 [CheckInstall](http://www.asic-linux.com.mx/~izto/checkinstall/index.php)
 pkg.
 
-Since the fork:
+Changes:
 
-* The app modified to not require an installation.
-* The wrapper script looks for the .so in its dir, not in the system
-  one.
-* Makefile outputs everything in `_build` dir.
+* apply the rel debian patches & fixes from the CI bugzilla.
+* make the installation step unnecessary.
+* force the wrapper script look for the .so in its dir, not in the
+  system one.
+* put the compilation results to `_build` dir.
 
-For a old changelog, see the orig repo.
+Tested on Fedora 26 only. For an old changelog, see the orig repo.
 
 ## Compilation
 
@@ -22,18 +23,18 @@ It creates `_build` w/ 2 files: `installwatch` &
 latter. Copy them somewhere & put a symlink to `installwatch` script
 into one of PATH dirs.
 
-The .so manual usage:
+## .so manual usage
 
-	$ LD_PRELOAD=path/to/installwatch.so touch 123
+	$ LD_PRELOAD=_build/installwatch.so touch 123
+	$ journalctl -ocat -n1
+	3       open    /home/alex/lib/software/fork/installwatch/123   #success
 
 ## Quick start
 
-Type:
-
 	installwatch <command>
 
-This monitors <command> and logs using the syslog(3) facility every created
-or modified file.
+This monitors <command> and logs via syslog(3) every created or
+modified file.
 
 	installwatch -o <filename> <command>
 
